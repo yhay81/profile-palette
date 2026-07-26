@@ -19,7 +19,7 @@
 
 ## Decision
 
-- Success signal: 生成完了10件以上、実投稿5件以上、再利用意思3人以上。
+- Success signal: 生成完了10件以上、実投稿5件以上、再利用意思3人以上。対応端末ではPNGと投稿文を共有画面へ直接渡す。
 - Failure signal: 生成完了5件未満、実投稿2件未満、または主な拒否理由が既存無料ツールで十分に集中。
 - Deadline: 2026-08-16。
 - Maximum build time: 2日。

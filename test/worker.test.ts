@@ -36,6 +36,7 @@ describe("worker", () => {
     expect(html).toContain("画像を選んで、プロフィールカードに。");
     expect(html).toContain('id="profile-canvas"');
     expect(html).toContain('id="download-button"');
+    expect(html).toContain('id="share-button"');
     expect(html).not.toContain("PUBLIC VALIDATION");
     expect(html).not.toContain("成功条件");
   });

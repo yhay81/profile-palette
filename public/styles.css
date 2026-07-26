@@ -682,6 +682,16 @@ input[type="range"] {
   background: white;
 }
 
+.button.share-button {
+  color: var(--ink);
+  background: var(--accent);
+  grid-column: 1 / -1;
+}
+
+.button[hidden] {
+  display: none;
+}
+
 .button:disabled {
   color: #909198;
   background: #e4e4e0;
