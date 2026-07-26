@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "profile-palette",
+  "main": "src/worker.tsx",
+  "compatibility_date": "2026-07-26",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "profile-palette",
+      "database_id": "7cc9b2fa-f70b-4944-9a8b-ada10dbd0014",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+  },
+}
