@@ -62,6 +62,7 @@
   const imageZoomInput = element("#image-zoom");
   const downloadButton = element("#download-button");
   const copyButton = element("#copy-button");
+  const shareButton = element("#share-button");
   const resetButton = element("#reset-button");
   const actionStatus = element("#action-status");
 
@@ -299,6 +300,31 @@
     const handle = state.xHandle.trim();
     return handle && !handle.startsWith("@") ? `@${handle}` : handle;
   };
+
+  const makePostText = () =>
+    `${state.displayName || "プロフィール"}の自己紹介カードを更新しました。\n\n#VRChat自己紹介カード #VRChatフレンド募集 #プロフパレット\nhttps://profile-palette.yusuke8h.workers.dev/`;
+
+  const makePngBlob = () =>
+    new Promise((resolve, reject) => {
+      render();
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("PNG generation failed"));
+          }
+        },
+        "image/png",
+        1,
+      );
+    });
+
+  const makeSafeName = () =>
+    state.displayName
+      .trim()
+      .replaceAll(/[\\/:*?"<>|]/g, "-")
+      .slice(0, 24) || "profile";
 
   const drawAurora = (ctx) => {
     const background = ctx.createLinearGradient(0, 0, 1600, 900);
@@ -800,51 +826,72 @@
   });
 
   if (downloadButton instanceof HTMLButtonElement) {
-    downloadButton.addEventListener("click", () => {
+    downloadButton.addEventListener("click", async () => {
       if (!images[0]) {
         setStatus("メイン画像を選んでください。", "error");
         return;
       }
-      render();
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            setStatus("PNGを作成できませんでした。", "error");
-            return;
-          }
-          const safeName =
-            state.displayName
-              .trim()
-              .replaceAll(/[\\/:*?"<>|]/g, "-")
-              .slice(0, 24) || "profile";
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement("a");
-          anchor.href = url;
-          anchor.download = `${safeName}-vrchat-profile.png`;
-          document.body.append(anchor);
-          anchor.click();
-          anchor.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-          track("exported");
-          setStatus("PNGを保存しました。Xの投稿へ画像を添付してください。", "success");
-        },
-        "image/png",
-        1,
-      );
+      try {
+        const blob = await makePngBlob();
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `${makeSafeName()}-vrchat-profile.png`;
+        document.body.append(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        track("exported");
+        setStatus("PNGを保存しました。Xの投稿へ画像を添付してください。", "success");
+      } catch {
+        setStatus("PNGを作成できませんでした。", "error");
+      }
     });
   }
 
   if (copyButton instanceof HTMLButtonElement) {
     copyButton.addEventListener("click", async () => {
-      const text = `${state.displayName || "プロフィール"}の自己紹介カードを更新しました。\n\n#VRChat自己紹介カード #VRChatフレンド募集 #プロフパレット\nhttps://profile-palette.yusuke8h.workers.dev/`;
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(makePostText());
         track("shared");
         setStatus("投稿文をコピーしました。保存したPNGと一緒に使えます。", "success");
       } catch {
         setStatus("コピーできませんでした。ブラウザの権限を確認してください。", "error");
       }
     });
+  }
+
+  if (shareButton instanceof HTMLButtonElement && typeof navigator.share === "function") {
+    const probeFile = new File([""], "profile-palette.png", { type: "image/png" });
+    if (typeof navigator.canShare !== "function" || navigator.canShare({ files: [probeFile] })) {
+      shareButton.hidden = false;
+      shareButton.addEventListener("click", async () => {
+        if (!images[0]) {
+          setStatus("メイン画像を選んでください。", "error");
+          return;
+        }
+        try {
+          const blob = await makePngBlob();
+          const file = new File([blob], `${makeSafeName()}-vrchat-profile.png`, {
+            type: "image/png",
+          });
+          await navigator.share({
+            files: [file],
+            text: makePostText(),
+            title: `${state.displayName || "VRChat"}の自己紹介カード`,
+          });
+          track("exported");
+          track("shared");
+          setStatus("画像と投稿文を共有しました。", "success");
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            setStatus("共有をキャンセルしました。");
+          } else {
+            setStatus("この端末では共有できませんでした。PNG保存をお使いください。", "error");
+          }
+        }
+      });
+    }
   }
 
   if (resetButton instanceof HTMLButtonElement) {

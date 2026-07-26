@@ -211,6 +211,10 @@ export function HomePage() {
               <button class="button secondary" id="copy-button" type="button">
                 投稿文をコピー
               </button>
+              <button class="button share-button" hidden id="share-button" type="button">
+                <span aria-hidden="true">↗</span>
+                画像と文面を共有
+              </button>
               <button class="text-button" id="reset-button" type="button">
                 入力をリセット
               </button>
