@@ -21,12 +21,19 @@ export function Layout({
   const canonicalUrl = `${baseUrl}${canonicalPath}`;
 
   return (
-    <html lang="ja">
+    <html itemscope itemtype="https://schema.org/WebApplication" lang="ja">
       <head>
         <meta charset="utf-8" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <meta content={description} name="description" />
+        <meta content={product.name} itemProp="name" />
+        <meta content={description} itemProp="description" />
+        <meta content={canonicalUrl} itemProp="url" />
+        <meta content={product.applicationCategory} itemProp="applicationCategory" />
+        <meta content="Any" itemProp="operatingSystem" />
+        <meta content="true" itemProp="isAccessibleForFree" />
         <meta content="#17191f" name="theme-color" />
+        <meta content="ja_JP" property="og:locale" />
         <link href={canonicalUrl} rel="canonical" />
         <meta content="website" property="og:type" />
         <meta content={title} property="og:title" />
